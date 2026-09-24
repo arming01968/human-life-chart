@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Biography Map — Writable</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>body{font-family:'Inter',sans-serif} .serif{font-family:'Crimson Pro',serif} textarea{resize:none}</style>
+</head>
+<body class="bg-[#fdf2f3] text-zinc-800">
+<header class="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center">
+<div>
+<h1 class="serif text-3xl md:text-4xl font-semibold">The Human Life — My Biography Map</h1>
+<p class="text-sm text-zinc-600 mt-1">Type directly into each 7-year band • Auto-saves to this browser • Export as JSON</p>
+</div>
+<nav class="flex gap-2">
+<a href="../" class="px-4 py-2 rounded-full bg-white border text-sm">← Clean Poster</a>
+<a href="../print/" class="px-4 py-2 rounded-full bg-zinc-900 text-white text-sm">Print Files</a>
+</nav>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 pb-24">
+<div class="bg-white rounded-[24px] shadow p-4 md:p-8">
+<img src="../assets/writable.webp" alt="Writable Map" class="w-full rounded-xl mb-8">
+
+<div id="grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+</div>
+
+<div class="mt-8 flex gap-3">
+<button id="exportJson" class="px-4 py-2 bg-zinc-900 text-white rounded-full text-sm">Export JSON</button>
+<button id="clearAll" class="px-4 py-2 bg-white border rounded-full text-sm">Clear All</button>
+<span id="status" class="text-xs text-zinc-500 py-2"></span>
+</div>
+</div>
+</main>
+
+<script>
+const periods = [
+{ id:"0-7", label:"0–7 Birth to 7 years — Moon — Physical body, imitation", prompt:"First memories, family atmosphere, home, early imprints..." },
+{ id:"7-14", label:"7–14 Childhood — Mercury — Vitality, imagination", prompt:"School, friendships, learning, stories that shaped you..." },
+{ id:"14-21", label:"14–21 Adolescence — Venus — Identity, independence", prompt:"Puberty, first loves, ideals, rebellion, talents..." },
+{ id:"21-28", label:"21–28 Young Adult — Sun begins — Sentient Soul", prompt:"Leaving home, education, first career, independence..." },
+{ id:"28-35", label:"28–35 Adult — Sun — Intellectual Soul", prompt:"Career building, partnership, family foundations..." },
+{ id:"35-42", label:"35–42 Mid-Life — Sun center — Consciousness Soul", prompt:"Midlife questions, crisis / reorientation, what wants to change?" },
+{ id:"42-49", label:"42–49 Mid-Life Transition — Mars — Transformation", prompt:"Letting go, courage, new will, transformation..." },
+{ id:"49-56", label:"49–56 Mature Adult — Jupiter — Expansion", prompt:"Mentorship, sharing wisdom, broadening horizons..." },
+{ id:"56-63", label:"56–63 Early Senior — Jupiter — Reflection", prompt:"Harvest, reflection, what has meaning?" },
+{ id:"63-70", label:"63–70 Senior — Saturn — Distillation", prompt:"Elderhood, distillation of life, legacy..." },
+{ id:"70-77", label:"70–77 Later Life — Saturn — Spiritual deepening", prompt:"Inner life, spiritual questions, freedom..." },
+{ id:"77-84", label:"77–84 Elder — Saturn — Integration", prompt:"Integration, stories to pass on, blessing..." },
+];
+
+const grid = document.getElementById('grid');
+periods.forEach(p=>{
+  const card = document.createElement('div');
+  card.className = "border border-zinc-200 rounded-2xl p-4 bg-[#fffcfc]";
+  card.innerHTML = `
+    <div class="flex justify-between items-start gap-2">
+      <h3 class="text-sm font-semibold text-zinc-900">${p.label}</h3>
+      <span class="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 border">${p.id}</span>
+    </div>
+    <textarea data-id="${p.id}" placeholder="${p.prompt}" class="mt-3 w-full h-28 p-3 text-sm bg-[#fdf2f3] rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900/10"></textarea>
+  `;
+  grid.appendChild(card);
+});
+
+function load(){
+  try{
+    const data = JSON.parse(localStorage.getItem('biography-map')||'{}');
+    document.querySelectorAll('textarea').forEach(t=>{
+      const id = t.dataset.id;
+      if(data[id]) t.value = data[id];
+    });
+    document.getElementById('status').textContent = "Loaded from this browser";
+  }catch(e){}
+}
+function save(){
+  const data = {};
+  document.querySelectorAll('textarea').forEach(t=> data[t.dataset.id]=t.value);
+  localStorage.setItem('biography-map', JSON.stringify(data));
+  document.getElementById('status').textContent = "Saved • "+ new Date().toLocaleTimeString();
+}
+document.addEventListener('input', (e)=>{ if(e.target.tagName==='TEXTAREA') save(); });
+
+document.getElementById('exportJson').addEventListener('click', ()=>{
+  const data = localStorage.getItem('biography-map')||'{}';
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='my-biography-map.json'; a.click();
+});
+document.getElementById('clearAll').addEventListener('click', ()=>{
+  if(confirm('Clear all entries?')){ localStorage.removeItem('biography-map'); document.querySelectorAll('textarea').forEach(t=>t.value=''); save(); }
+});
+
+load();
+</script>
+</body>
+</html>
